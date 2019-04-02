@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="display-4">Send Message</h1>
+            <div class="row">
+                <div class="col col-md-2">
+                        <input id = "name" class="form-control" placeholder="Name">
+                </div>
+                <div class="col col-md-8">
+                    <input id = "message" class="form-control" placeholder="Your Message Here">
+                </div>
+                <div class="col col-md-2">
+                        <button id="send" class="btn btn-success">Send</button>
+                </div>          
+            </div>
+            <br/>
+            <div id="messages">
+            </div>
+        </div>
+        
+    </body>
+    <script>
+
+       //var socket = io.connect('http://localhost:3000'); // it's also work
+       var socket = io();
+        socket.on('message', (data)=>{
+            console.log("--------");
+            console.log(data);
+            addMessages(data);
+        })
+
+        $(() => {
+            
+            $("#send").click(()=>{
+                if( $("#name").val() != ""){
+                        sendMessage({
+                            name: $("#name").val(), 
+                            message:$("#message").val()
+                        });
+                    }
+                else{
+                    alert("Please enter your name")
+                }
+            })
+                
+            
+            getMessages()
+
+           
+        })
+
+        function addMessages(message){
+            $("#messages").append(
+                `<p> <b>${message.name}</b>  :  ${message.message} </p>`
+            )
+        }
+
+        function getMessages(){
+            $.get('http://localhost:3000/chat', (data) => {
+                data.forEach(addMessages);
+            })
+        }
+
+        function sendMessage(message){
+            $.post('http://localhost:3000/chat', message, (data)=>{
+                
+                if(data.success == true){
+                    
+                    socket.emit('message', data.chat);
+                    console.log("**********");
+                    console.log(data);
+                }
+            })
+        }
+
+    </script>
+</html>
+
